@@ -1,0 +1,22 @@
+
+function f:
+	f_x_0 = param 1;
+	$t0 = f_x_0;
+	print $t0;
+	return;
+end f;
+
+
+function g:
+	g_y_1 = param 1;
+	return;
+	$t1 = g_y_1;
+	print $t1;
+end g;
+
+	$t2 = 1;
+	print $t2;
+	param 1 = 2;
+	call f;
+	param 1 = 3;
+	call g;

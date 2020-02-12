@@ -1,0 +1,28 @@
+	x = 1;
+	y = 3;
+
+function f:
+	f_x_0 = param 1;
+	f_y_0 = param 2;
+	if (f_x_0 == f_y_0) goto L1;
+	goto L2;
+L1:
+	x_2 = 3;
+	$t0 = x_2;
+	print $t0;
+	goto L0;
+L2:
+L0:
+	$t1 = f_x_0;
+	print $t1;
+end f;
+
+	$t2 = x;
+	print $t2;
+	$t4 = x + y;
+	param 1 = $t4;
+	$t6 = y + x;
+	param 2 = $t6;
+	call f;
+	$t7 = x;
+	print $t7;

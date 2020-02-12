@@ -1,0 +1,15 @@
+
+function f:
+   x_2 = param 1;
+   $t0 = 2 * x_2;
+   $t1 = $t0 - 8;
+   f = $t1;
+   return;
+end f;
+
+   print 1;
+   param 1 = 5;
+   call f;
+   a = f;
+   print a;
+   print 3;

@@ -1,0 +1,24 @@
+   x = 1;
+   y = 3;
+
+function f:
+   x_2 = param 1;
+   y_2 = param 2;
+   if (x_2 == y_2) goto L0;
+   goto L1;
+L0:
+   x_4 = 3;
+   print x_4;
+   goto L2;
+L1:
+L2:
+   print x_2;
+end f;
+
+   print x;
+   $t0 = x + y;
+   $t1 = y + x;
+   param 1 = $t0;
+   param 2 = $t1;
+   call f;
+   print x;

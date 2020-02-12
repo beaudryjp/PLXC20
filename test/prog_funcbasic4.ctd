@@ -1,0 +1,17 @@
+
+function f:
+   x_2 = param 1;
+   print x_2;
+end f;
+
+
+function g:
+   y_4 = param 1;
+   print y_4;
+end g;
+
+   print 1;
+   param 1 = 2;
+   call f;
+   param 1 = 3;
+   call g;

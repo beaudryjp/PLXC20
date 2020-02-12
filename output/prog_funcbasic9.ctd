@@ -1,0 +1,30 @@
+
+function abs:
+	abs_a_0 = param 1;
+	if (abs_a_0 < 0) goto L1;
+	goto L2;
+L1:
+	$t0 = -abs_a_0;
+	abs = $t0;
+	return;
+	goto L0;
+L2:
+L0:
+	abs = abs_a_0;
+	return;
+end abs;
+
+	$t1 = 4;
+	print $t1;
+	x = 0;
+	$t2 = -5;
+	param 1 = $t2;
+	call abs;
+	x = abs;
+	$t3 = x;
+	print $t3;
+	param 1 = 6;
+	call abs;
+	x = abs;
+	$t4 = x;
+	print $t4;

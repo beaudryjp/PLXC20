@@ -1,0 +1,15 @@
+	x = 1;
+
+function tres:
+	tres_x_0 = param 1;
+	$t0 = tres_x_0;
+	print $t0;
+	return;
+end tres;
+
+	$t1 = 1;
+	print $t1;
+	param 1 = 2;
+	call tres;
+	$t2 = 3;
+	print $t2;

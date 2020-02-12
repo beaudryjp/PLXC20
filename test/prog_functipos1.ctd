@@ -1,0 +1,23 @@
+
+function f:
+   x_2 = param 1;
+   y_2 = param 2;
+   z_2 = param 3;
+   t_2 = param 4;
+   printc t_2;
+   printc z_2;
+   $t0 = (int) y_2;
+   $t1 = x_2 - $t0;
+   f = $t1;
+   return;
+end f;
+
+   print 1;
+   param 1 = 9;
+   param 2 = 7.1;
+   param 3 = 66;
+   param 4 = 65;
+   call f;
+   x = f;
+   print x;
+   print 3;

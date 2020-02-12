@@ -1,0 +1,16 @@
+	x = 0;
+	x = 2;
+
+function f:
+	$t0 = x;
+	print $t0;
+	$t1 = -x;
+	f = $t1;
+	return;
+end f;
+
+	$t2 = 1;
+	print $t2;
+	# ERROR: The number or the type of the parameters don't match.
+	error;
+	halt;

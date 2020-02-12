@@ -1,0 +1,14 @@
+# WARNING: Definicion implicita de la funcion 'suma'
+   param 1 = 65;
+   param 2 = 60;
+   call suma;
+   print suma;
+
+function suma:
+   a_2 = param 1;
+   y_2 = param 2;
+   $t0 = a_2 + y_2;
+   suma = $t0;
+   return;
+end suma;
+

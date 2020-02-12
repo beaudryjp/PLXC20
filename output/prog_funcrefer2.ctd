@@ -1,0 +1,23 @@
+	a = 7;
+	b = 5;
+
+function refer:
+	refer_x_0 = param 1;
+	refer_b_0 = param 2;
+	$t0 = *refer_x_0;
+	$t2 = $t0 * refer_b_0;
+	*refer_x_0 = $t2;
+	$t3 = *refer_x_0;
+	refer = $t3;
+	return;
+end refer;
+
+	$t4 = &a;
+	param 1 = $t4;
+	param 2 = b;
+	call refer;
+	b = refer;
+	$t5 = a;
+	print $t5;
+	$t6 = b;
+	print $t6;

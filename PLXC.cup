@@ -1,0 +1,1038 @@
+import java_cup.runtime.*;
+import java.lang.*;
+import java.util.*;
+
+/* Nota(0-10) = (Nota*45) / 30 */
+
+/*--------------------------------------------------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------------------- ASCII --------------------*/
+
+/*
+Dec  Char                           Dec  Char     Dec  Char     Dec  Char
+---------                           ---------     ---------     ----------
+  0  NUL (null)                      32  SPACE     64  @         96  `
+  1  SOH (start of heading)          33  !         65  A         97  a
+  2  STX (start of text)             34  "         66  B         98  b
+  3  ETX (end of text)               35  #         67  C         99  c
+  4  EOT (end of transmission)       36  $         68  D        100  d
+  5  ENQ (enquiry)                   37  %         69  E        101  e
+  6  ACK (acknowledge)               38  &         70  F        102  f
+  7  BEL (bell)                      39  '         71  G        103  g
+  8  BS  (backspace)                 40  (         72  H        104  h
+  9  TAB (horizontal tab)            41  )         73  I        105  i
+ 10  LF  (NL line feed, new line)    42  *         74  J        106  j
+ 11  VT  (vertical tab)              43  +         75  K        107  k
+ 12  FF  (NP form feed, new page)    44  ,         76  L        108  l
+ 13  CR  (carriage return)           45  -         77  M        109  m
+ 14  SO  (shift out)                 46  .         78  N        110  n
+ 15  SI  (shift in)                  47  /         79  O        111  o
+ 16  DLE (data link escape)          48  0         80  P        112  p
+ 17  DC1 (device control 1)          49  1         81  Q        113  q
+ 18  DC2 (device control 2)          50  2         82  R        114  r
+ 19  DC3 (device control 3)          51  3         83  S        115  s
+ 20  DC4 (device control 4)          52  4         84  T        116  t
+ 21  NAK (negative acknowledge)      53  5         85  U        117  u
+ 22  SYN (synchronous idle)          54  6         86  V        118  v
+ 23  ETB (end of trans. block)       55  7         87  W        119  w
+ 24  CAN (cancel)                    56  8         88  X        120  x
+ 25  EM  (end of medium)             57  9         89  Y        121  y
+ 26  SUB (substitute)                58  :         90  Z        122  z
+ 27  ESC (escape)                    59  ;         91  [        123  {
+ 28  FS  (file separator)            60  <         92  \        124  |
+ 29  GS  (group separator)           61  =         93  ]        125  }
+ 30  RS  (record separator)          62  >         94  ^        126  ~
+ 31  US  (unit separator)            63  ?         95  _        127  DEL
+
+*/
+
+
+/*--------------------------------------------------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------------- Precedences --------------------*/
+
+/*
+Precedence	            Operator	        Description	                                        Associativity
+-------------------------------------------------------------------------------------------------------------
+
+        14	            ++ --	            Suffix/postfix increment and decrement	            Left-to-right
+                        ()	                Function call
+                        []	                Array subscripting
+                        .	                Structure and union member access
+                        ->	                Structure and union member access through pointer
+
+
+        13	            ++ --	            Prefix increment and decrement      	            Right-to-left
+                        + -	                Unary plus and minus
+                        ! ~	                Logical NOT and bitwise NOT
+                        (type)	            Type cast
+                        *	                Indirection (dereference)
+                        &	                Address-of
+                        sizeof	            Size-of
+
+
+        12	            * / %	            Multiplication, division, and remainder	            Left-to-right
+
+
+        11	            + -	                Addition and subtraction                            Left-to-right
+
+
+        10	            << >>	            Bitwise left shift and right shift                  Left-to-right
+
+
+         9	            < <=	            For relational operators < and ≤ respectively       Left-to-right
+                        > >=	            For relational operators > and ≥ respectively
+
+
+         8	            == !=	            For relational = and ≠ respectively                 Left-to-right
+
+
+         7	            &	                Bitwise AND                                         Left-to-right
+
+
+         6	            ^	                Bitwise XOR (exclusive or)                          Left-to-right
+
+
+         5	            |	                Bitwise OR (inclusive or)                           Left-to-right
+
+
+         4	            &&	                Logical AND                                         Left-to-right
+
+
+         3	            ||	                Logical OR                                          Left-to-right
+
+
+         2	            ?:	                Ternary conditional	                                Right-to-Left
+
+
+         1	            =	                Simple assignment                                   Right-to-Left
+                        += -=	            Assignment by sum and difference
+                        *= /= %=	        Assignment by product, quotient, and remainder
+                        <<= >>=	            Assignment by bitwise left shift and right shift
+                        &= ^= |=	        Assignment by bitwise AND, XOR, and OR
+
+
+         0	            ,	                Comma	                                            Left-to-right
+
+
+*/
+
+/*--------------------------------------------------------------------------------------------------------------------*/
+/*------------------------------------------------------------------------------------- Terminals --------------------*/
+
+/* new terminals added */
+terminal RETURN;
+
+terminal UMINUS, UPOINTER;
+terminal ADD, SUB, MUL, DIV, ASIG, DEC, INC, MOD;
+terminal EQ, GT, LT, LTOREQ, GTOREQ, NOTEQ, AND, OR, NOT;
+terminal OP, CP, OB, CB, OSB, CSB, TILDE, SEMICOLON, COLON, AMP, COMMA;
+terminal INT, FLOAT, STRING, VOID;
+terminal IF, ELSE, WHILE, DO, PRINT, LENGTH;
+terminal FOR, TO, DOWNTO, STEP, IN;
+terminal String NUM;
+terminal String VAR;
+terminal String REAL;
+terminal String CHAR;
+terminal String QUOTES;
+terminal String INISTRING;
+
+/*--------------------------------------------------------------------------------------------------------------------*/
+/*------------------------------------------------------------------------------------- Non terminals ----------------*/
+
+/* new non terminals added */
+non terminal part_def_function;
+non terminal def_function;
+non terminal def_function_params;
+non terminal call_function_params;
+non terminal sentence_return;
+non terminal String call_function;
+non terminal String part_def_function_params;
+
+non terminal list_sentences;
+non terminal sentence;
+non terminal part_else;
+non terminal sentence_if;
+non terminal sentence_while;
+non terminal sentence_do_while;
+non terminal sentence_for_to;
+non terminal sentence_for_in;
+non terminal sentence_for_downto;
+non terminal sentence_print;
+non terminal sentence_block;
+non terminal Tuple condition;
+non terminal Tuple sentences_for;
+non terminal Tuple part_for;
+non terminal Tuple part_to;
+non terminal Tuple part_down_to;
+non terminal Tuple expression;
+non terminal Tuple cast;
+non terminal Tuple operator;
+non terminal Tuple array_init;
+non terminal Tuple assigned_value;
+non terminal String part_if;
+non terminal String part_while;
+non terminal String part_do_while;
+non terminal String var_declaration;
+non terminal String var_assignment;
+non terminal String variable;
+non terminal String part_step;
+non terminal String pointer;
+
+/*--------------------------------------------------------------------------------------------------------------------*/
+/*------------------------------------------------------------------------------------- Precedences ------------------*/
+
+precedence left OP, CP;
+precedence right COMMA;
+precedence left COLON;
+precedence left OR;
+precedence left AND;
+precedence left NOT, NOTEQ;
+precedence left GTOREQ, LTOREQ, GT, LT, EQ;
+precedence right ASIG;
+precedence left ADD, SUB;
+precedence left DEC, INC;
+precedence left MUL, DIV;
+precedence left MOD;
+precedence left UMINUS, UPOINTER, AMP;
+/* new precedence added */
+precedence left RETURN;
+precedence left NOT, TILDE;
+precedence nonassoc IF;
+precedence nonassoc ELSE;
+precedence nonassoc OB, CB;
+precedence nonassoc NUM, VAR, REAL, INISTRING;
+
+/*--------------------------------------------------------------------------------------------------------------------*/
+/*------------------------------------------------------------------------------------- Grammar ----------------------*/
+
+start with list_sentences;
+
+list_sentences ::= sentence
+    | list_sentences sentence
+;
+/*--------------------------------------------------------------------------------------------------------------------*/
+/*------------------------------------------------------------------------------------- Sentences --------------------*/
+
+sentence ::= sentence_if
+    | sentence_while
+    | sentences_for
+    | sentence_print
+    | sentence_block
+    | sentence_return SEMICOLON
+    | expression SEMICOLON
+    | var_declaration SEMICOLON 
+    | def_function
+    /*| call_function SEMICOLON*/
+;
+
+/*--------------------------------------------------------------------------------------------------------------------*/
+/*------------------------------------------------------------------------------------- Functions ----------*/
+
+def_function  ::= VOID pointer:id {: Generator.function_set_name(id); Generator.function_set_type(Type.VOID); :} OP def_function_params CP part_def_function
+    | INT pointer:id {: Generator.function_set_name(id); Generator.function_set_type(Type.INT); :} OP def_function_params CP part_def_function
+    | FLOAT pointer:id {: Generator.function_set_name(id); Generator.function_set_type(Type.FLOAT); :} OP def_function_params CP part_def_function
+    | CHAR pointer:id {: Generator.function_set_name(id); Generator.function_set_type(Type.CHAR); :} OP def_function_params CP part_def_function   
+;
+
+part_def_function ::= {: Generator.def_function_first(Generator.function_get_name(), Generator.function_get_type()); :} 
+        OB list_sentences CB {: Generator.def_function_last(Generator.function_get_name()); :}
+    | SEMICOLON {: SymbolTable.param_clear(); :}
+;
+
+call_function  ::= VAR:id OP CP {: 
+        //System.out.println(id);
+        Generator.command("call", id);
+        RESULT = id;
+    :}
+    | VAR:id OP {:
+            //System.out.println(Generator.function_get_name());
+            //SymbolTable.dump();
+            if(!SymbolTable.table_find(id)){
+                String f = Generator.function_get_name();
+                //System.out.println(Generator.function_get_name());
+                Generator.warning("Implicit definition of the function '" + id + "'.");
+                Generator.function_set_name(id);
+                Generator.function_set_implicit(true);
+                //System.out.println(f);
+                //System.out.println(Generator.function_get_parent());
+                if(f != null){
+                    Generator.function_set_parent(f);
+                }
+                SymbolTable.table_block_start();
+                Generator.function_set_type(Type.INT);
+                SymbolTable.table_put(id, Type.INT);
+                //Generator.function_data();
+                //SymbolTable.dump();
+            }
+            else{
+                String f = Generator.function_get_name();
+                if(f == null){
+                    Generator.function_set_name(id);
+                }
+                else{
+                    Generator.function_set_name(id);
+                    Generator.function_set_parent(f);
+                }
+                Generator.function_set_implicit(false);
+            }
+        :} 
+        call_function_params CP {:
+            //String f = Generator.function_get_name();
+            Generator.command("call", id);
+            RESULT = id;
+            Generator.params_reset_counter();
+            Generator.function_set_name(null);
+            Generator.function_set_implicit(false);
+    :}
+;
+
+def_function_params  ::= INT part_def_function_params:id {: Generator.def_function_par(id, Type.INT); :}
+    | FLOAT part_def_function_params:id {: Generator.def_function_par(id, Type.FLOAT); :}
+    | CHAR part_def_function_params:id {: Generator.def_function_par(id, Type.CHAR);:}
+    | def_function_params COMMA INT part_def_function_params:id {: Generator.def_function_par(id, Type.INT); :}
+    | def_function_params COMMA FLOAT part_def_function_params:id {: Generator.def_function_par(id, Type.FLOAT);:}
+    | def_function_params COMMA CHAR part_def_function_params:id {: Generator.def_function_par(id, Type.CHAR); :}
+    | /* epsilon */
+;
+
+part_def_function_params ::= pointer:id {: RESULT = id; :}
+    | /* epsilon */ {: RESULT = null; :}
+;
+
+call_function_params  ::= expression:n {: Generator.call_func_par(n); :}
+    |  call_function_params COMMA expression:n {: Generator.call_func_par(n); :}
+;
+
+sentence_return  ::= RETURN {: Generator.sentence_return(); :}
+    | RETURN expression:e {: Generator.return_sentence(e); :}
+;
+
+/*----------------------------------------------------------------------------------------------------------------------*/
+/*------------------------------------------------------------------------------------- If Sentence --------------------*/
+
+sentence_if ::= part_if:tag OP condition:c CP {: Generator.label(c.getA()); :}
+    sentence {: Generator.label_goto(tag); Generator.label(c.getB()); :}
+    part_else {: Generator.label(tag); :}
+;
+/*----------------------------------------------------------------------------------------------------------------------*/
+/*------------------------------------------------------------------------------------- While Sentence -----------------*/
+
+sentence_while ::= part_while:tag {: Generator.label(tag); :}
+    OP condition:c {: Generator.label(c.getA()); :}
+    CP sentence {: Generator.label_goto(tag); Generator.label(c.getB()); :}
+;
+/*----------------------------------------------------------------------------------------------------------------------*/
+/*------------------------------------------------------------------------------------- Do While Sentence --------------*/
+
+sentence_do_while ::= part_do_while:tag {: Generator.label(tag); :}
+    sentence WHILE OP condition:c {: Generator.label(c.getA()); Generator.label_goto(tag); Generator.label(c.getB()); :}
+    CP SEMICOLON
+;
+/*---------------------------------------------------------------------------------------------------------------------*/
+/*------------------------------------------------------------------------------------- Print Sentence ----------------*/
+
+sentence_print ::= PRINT OP INISTRING:i CP SEMICOLON {: Generator.print_string(i); :}
+    | PRINT OP array_init:i CP SEMICOLON {: Generator.print_array(i); :}
+    | PRINT OP expression:e CP SEMICOLON {: Generator.print_expression(e); :}
+;
+/*---------------------------------------------------------------------------------------------------------------------*/
+/*------------------------------------------------------------------------------------- Block Sentence ----------------*/
+
+sentence_block ::= OB CB
+    | OB {: SymbolTable.table_block_start(); :} list_sentences {: SymbolTable.table_block_end(); :} CB
+;
+
+/*--------------------------------------------------------------------------------------------------------------------*/
+/*------------------------------------------------------------------------------------- For Sentences ----------------*/
+
+part_for ::= FOR OP expression:e1 SEMICOLON {:
+            RESULT = new Tuple(Generator.label_new(), null);
+            Generator.label(RESULT.getA());
+        :}
+        condition:c SEMICOLON {:
+            RESULT.setB(Generator.label_new());
+            Generator.label(RESULT.getB());
+        :}
+        expression:e2{:
+            Generator.label_goto(RESULT.getA());
+            Generator.label(c.getA());
+        :}
+        CP OB list_sentences {:
+            Generator.label_goto(RESULT.getB());
+            Generator.label(c.getB()); 
+        :} CB
+    | FOR expression:e1 part_to:t expression:e2 {:
+            RESULT = Generator.for_loop(e2.getA() + " < " + e1.getA(), t.getB(), t.getA());
+        :} 
+        part_step:s {:
+            if(s != null){
+                Generator.assignment(e1.getA(), e1.getA() + " + " + s);
+            }
+            else {
+                Generator.assignment(e1.getA(), e1.getA() + " + 1");
+            }
+            Generator.label_goto(RESULT.getA());
+            Generator.label(t.getA());
+        :}
+        DO sentence {:
+            Generator.label_goto(RESULT.getB());
+            Generator.label(t.getB());
+        :}
+    | FOR expression:e1 part_down_to:t expression:e2 {:
+            RESULT = Generator.for_loop(e1.getA() + " < " + e2.getA(), t.getA(), t.getB());
+        :} 
+        part_step:s {:
+            if(s != null){
+                Generator.assignment(e1.getA(), e1.getA() + " + " + s);
+            }
+            else {
+                Generator.assignment(e1.getA(), e1.getA() + " + 1");
+            }
+            Generator.label_goto(RESULT.getA());
+            Generator.label(t.getA());
+        :}
+        DO sentence{:
+            Generator.label_goto(RESULT.getB());
+            Generator.label(t.getB());
+        :}
+    | FOR operator:e IN assigned_value:a {:
+            RESULT = Generator.for_in_loop(e, a);            
+        :}
+        DO sentence {:
+            Generator.label_goto(RESULT.getA());
+            Generator.label(RESULT.getB());
+        :}
+    | FOR OP operator:e1 COLON operator:e2 CP {:
+            RESULT = Generator.for_colon_loop(e1, e2);  
+        :} 
+        list_sentences {:
+            Generator.label_goto(RESULT.getA());
+            Generator.label(RESULT.getB());
+        :}
+;
+/*--------------------------------------------------------------------------------------------------------------------*/
+/*----------------------------------------------------------------- Additional non terminals for conditionals --------*/
+
+part_if ::= IF {: RESULT = Generator.label_new(); :}
+;
+
+part_while ::= WHILE {: RESULT = Generator.label_new(); :}
+;
+
+part_to ::= TO {: RESULT = new Tuple(Generator.label_new(), Generator.label_new()); :}
+;
+
+part_down_to ::= DOWNTO {: RESULT = new Tuple(Generator.label_new(), Generator.label_new()); :}
+;
+
+part_do_while ::= DO {: RESULT = Generator.label_new(); :}
+;
+
+part_else ::= ELSE sentence
+    | /* epsilon */
+;
+
+part_step ::= STEP expression:n {: RESULT = n.getA(); :}
+    | /* epsilon */ {: RESULT = null; :}
+;
+/*----------------------------------------------------------------------------------------------------------------------*/
+/*------------------------------------------------------------------------------------- Expressions --------------------*/
+
+expression ::= expression:e1 ADD expression:e2 {:  RESULT = Generator.arithmetic(Generator.ADD, "+", e1, e2); :}
+    | expression:e1 SUB expression:e2 {:  RESULT = Generator.arithmetic(Generator.SUB, "-", e1, e2); :}
+    | expression:e1 MUL expression:e2 {:  RESULT = Generator.arithmetic(Generator.MUL, "*", e1, e2); :}
+    | expression:e1 DIV expression:e2 {:  RESULT = Generator.arithmetic(Generator.DIV, "/", e1, e2); :}
+    | expression:e1 MOD expression:e2 {:  RESULT = Generator.arithmetic(Generator.MOD, "", e1, e2); :}
+    | SUB expression:e {:  RESULT = Generator.arithmetic(Generator.MIN, "", e, null); :} %prec UMINUS
+    | variable:v INC {: RESULT = Generator.increment(Generator.INCR, v); :}
+    | INC variable:v {: RESULT = Generator.increment(Generator.INCL, v); :}
+    | variable:v DEC {: RESULT = Generator.increment(Generator.DECR, v); :}
+    | DEC variable:v {: RESULT = Generator.increment(Generator.DECL, v); :}
+    | OP FLOAT cast:e CP {: RESULT = Generator.cast(Type.FLOAT, e); :}
+    | OP INT cast:e CP {: RESULT = Generator.cast(Type.INT, e); :}
+    | OP FLOAT CP cast:e {: RESULT = Generator.cast(Type.INT, e); :}
+    | OP INT CP cast:e {: RESULT = Generator.cast(Type.INT, e); :}
+    | OP CHAR CP cast:e {: RESULT = Generator.cast_char(e); :}
+    | OP CHAR cast:e CP {: RESULT = Generator.cast_char(e); :}
+    | OP STRING CP cast:e {: RESULT = Generator.cast_string(e); :}
+    | OP CHAR OSB CSB CP cast:e {: RESULT = new Tuple(e.getA(),"ARRAY(" + Type.CHAR + ")");  :}
+    | OP INT OSB CSB CP cast:e {: RESULT = new Tuple(e.getA(),"ARRAY(" + Type.INT + ")");  :}
+    | OP expression:e CP {: RESULT = e; :}
+    | operator:e {: RESULT = e; :}
+    | NOT expression:e {: RESULT = Generator.not_expression(e); :} %prec NOT
+    | TILDE expression:e {: RESULT = Generator.tilde_expression(e); :} 
+    | variable:i LENGTH {: RESULT = Generator.init_string_first(i); :} INISTRING:e {: RESULT = Generator.init_string_last(i); :}
+    | MUL pointer:e {: RESULT = Generator.pointer_access(e); :}
+    | MUL pointer:i ASIG {: RESULT = Generator.pointer_asig_access(i); :} expression:e {: Generator.pointer_asig_expression(RESULT, i, e); :}
+    | AMP expression:e {: RESULT = Generator.pointer_reference(e); :}
+    | call_function:f {: RESULT = new Tuple(f, Generator.function_get_type()); :}
+    | variable:i {: Generator.var_check(i); :} ASIG assigned_value:e {:
+            String var_temp = i;
+            String f = Generator.function_get_name();
+            String p = Generator.function_get_parent();
+            String v = Generator.function_scope_get_vars(f, i, Generator.function_get_counter());
+            String v2 = Generator.scope_get_vars(i, SymbolTable.table_get_block_index());
+            /*
+            System.out.println(i);
+            System.out.println(e);
+            System.out.println(f);
+            System.out.println(p);
+            System.out.println(v);
+            System.out.println(v2);
+            SymbolTable.dump();
+            */
+            
+            if(f != null){
+                if(SymbolTable.param_exists(v)){
+                    i = v;
+                }
+                else if(SymbolTable.table_find(v2)){
+                    i = v2;
+                }
+            }
+            
+            if(i.contains("*")){
+                var_temp = i.replace("*","");
+            }
+            if(i.contains("[")){
+                var_temp = i.substring(0, i.indexOf("["));
+            }
+            else if(f !=null && i.contains(f)){
+                if(e != null && SymbolTable.param_get_type(i).contains(Type.INT) && e.getB().contains(Type.FLOAT)){
+                    Generator.error("Types don't match.", true);
+                }
+            }
+            /*
+            else if(SymbolTable.table_get_type(i).contains(Type.INT) && e.getB().contains(Type.FLOAT)){
+                    error("Types don't match.", true);
+            }
+            */
+            /* Array Initialization */
+            if(e.getA() == Generator.array_get_temp()){
+                int tamanoMax = SymbolTable.array_get_size(var_temp);
+                String replace = e.getB();
+                int k = 0;
+                while(replace.charAt(k) < 60){
+                    k++;
+                }
+                replace = e.getB().substring(0,k);
+                int tam = Integer.parseInt(replace);
+                if(tam >= tamanoMax){
+                    Generator.error("Invalid position on '" + var_temp + "'", true);
+                }
+                String array = e.getA();
+                String t = Generator.var_new_temp();
+                for(int j = 0; j <= tam ;j++){
+                    System.out.println("\t" + t + " = " + array + "[" + j + "];");
+                    System.out.println("\t" + var_temp + "[" + j + "] = " + t + ";");
+                }
+                System.out.println("\t" + var_temp + " = " + array + ";");
+                Generator.array_reset_position();
+                RESULT = new Tuple(var_temp, SymbolTable.table_get_type(var_temp));
+
+            }
+            else if(i.contains("*")) {
+
+                int pointers_num = i.length() - i.replace("*", "").length();
+                int levelsAssign = (e.getB().length() - e.getB().replace("POINTER", "").length());
+                String typeA = SymbolTable.table_get_type(i.replace("*",""));
+                int levels = (typeA.length() - typeA.replace("POINTER", "").length());
+                //System.out.println(1);
+                if(levels - pointers_num != levelsAssign){
+                    Generator.error("Types of the pointers don't match.", true);  
+                }
+                if(pointers_num > 1){
+                    String asd = i.replace("*","");
+                    String das = "";
+                    int j = 0;
+                    do{
+                        das = Generator.var_new_temp();
+                        System.out.println("\t" + das + " = *" + asd + ";");
+                        asd = das;
+                        j++;
+                    } while(j < pointers_num-1);
+                    System.out.println("\t*" + das + " = "  + e.getA() + ";");
+                } else {
+                    System.out.println("\t" + i + " = " + e.getA() + ";");
+                }
+
+            }
+            else if(SymbolTable.table_find(i) && SymbolTable.table_get_type(i).contains("POINTER") || e.getB().contains("POINTER")) {
+                int levelsAssign = (e.getB().length() - e.getB().replace("POINTER", "").length());
+                String typeA = SymbolTable.table_get_type(i.replace("*",""));
+                int levels = (typeA.length() - typeA.replace("POINTER", "").length());
+                //System.out.println();
+                //System.out.println(2);
+                /*
+                if(levels != levelsAssign){
+                    error("Types of the pointers don't match.", true);   
+                }
+                */
+                System.out.println("\t" + i + " = " + e.getA() + ";");
+
+            } 
+            /* Other types */
+            else {
+                String typeA = "";
+                if(i.contains("[")) {
+                    typeA = SymbolTable.table_get_type(i.substring(0, i.indexOf("[")));
+                }
+                else {
+                    if(f !=null && i.startsWith(f))
+                        typeA = SymbolTable.param_get_type(i);
+                    else
+                        typeA = SymbolTable.table_get_type(i);
+                }           
+                String typeB = e.getB();
+                /* Assign position of an array to another array */
+                if(!i.contains("[") && !e.getA().contains("[") && typeA.contains(Type.ARRAY) && typeB.contains(Type.ARRAY)){  
+                    int abre = typeA.indexOf("[");
+                    int cierra = typeA.indexOf("]");
+                    int tamA = Integer.parseInt(typeA.substring(abre+1,cierra));
+                    abre = typeB.indexOf("[");
+                    cierra = typeB.indexOf("]");
+                    int tamB = 0;
+                    if(typeB.equals("ARRAY(char)") || typeB.equals("ARRAY(int)")){
+                        tamB = tamA;
+                    } else {
+                        tamB = Integer.parseInt(typeB.substring(abre+1,cierra));
+                    }
+                    
+                    if(tamA < tamB){
+                        Generator.error("Size of '" + i + "' is less than '" + e.getA() + "'.", true);
+                    }
+                    String t = Generator.var_new_temp();
+                    for(int j = 0; j < tamB; j++){
+                        System.out.println("\t" + t + " = " + e.getA() + "[" + j + "];");
+                        System.out.println("\t" + i + "[" + j + "] = " + t + ";");
+                    }
+                    System.out.println("\t" + i + " = " + e.getA() + ";");
+                    RESULT = new Tuple(i,typeA);
+                }
+                else if(typeA.equals(Type.INT) && e.getA().contains("_length")) {
+                    System.out.println("\t" + i + " = " + e.getA() + ";");
+                }
+                else {
+                    /*
+                    System.out.println("typeA: " + typeA);
+                    System.out.println("typeB: " + typeB);
+                    */
+                    if(typeA.equals(Type.STRING) && typeB.equals(Type.STRING)){
+
+                        String s = e.getA();
+                        if(s.contains("\"")){ 
+                            s = e.getA().substring(1,e.getA().length()-1);
+                            String arrayTemp = Generator.var_new_temp();
+                            int value = 0;
+                            int tam = s.length();
+                            int special = 0;
+                            for(int j = 0; j < tam; j++){
+                                value = s.charAt(j);
+                                if(j>0 && s.charAt(j-1) == 92 && s.charAt(j-2) != 92){
+                                    special--;
+                                    System.out.println("\t" + arrayTemp + "[" + special + "] = " + value + ";");
+                                } else if(value == 92){
+
+                                } else {
+                                    System.out.println("\t" + arrayTemp + "[" + special + "] = " + value + ";");
+                                }
+                                special++;
+                            }
+                            System.out.println("\t" + arrayTemp + "_length = " + special + ";");
+                            String counter = Generator.var_new_temp();
+                            System.out.println("\t" + counter + " = 0;");
+                            String tag = Generator.label_new();
+                            String condTrue = Generator.label_new();
+                            String condFalse = Generator.label_new();
+                            System.out.println(tag + ":");
+                            System.out.println("\tif (" + counter + " < " + arrayTemp + "_length) goto " + condTrue + ";");
+                            System.out.println("\tgoto " + condFalse + ";");
+                            System.out.println(condTrue + ":");
+                            String aux = Generator.var_new_temp();
+                            System.out.println("\t" + aux + " = " + arrayTemp + "[" + counter + "];");
+                            System.out.println("\t" + i + "[" + counter + "] = " + aux + ";");
+                            System.out.println("\t" + counter + " = " + counter + " + 1;");
+                            System.out.println("\tgoto " + tag + ";");
+                            System.out.println(condFalse + ":");
+                            System.out.println("\t" + i + "_length = " + arrayTemp + "_length;");
+                            System.out.println("\t" + i + " = " + arrayTemp + ";");
+                        }
+                        else {
+                            String counter = Generator.var_new_temp();
+                            String tag = Generator.label_new();
+                            String condTrue = Generator.label_new();
+                            String condFalse = Generator.label_new();
+                            System.out.println(tag + ":");
+                            System.out.println("\tif (" + counter + " < " + e.getA() + "_length) goto " + condTrue + ";");
+                            System.out.println("\tgoto " + condFalse + ";");
+                            System.out.println(condTrue + ":");
+                            String aux = Generator.var_new_temp();
+                            System.out.println("\t" + aux + " = " + e.getA() + "[" + counter + "];");
+                            System.out.println("\t" + i + "[" + counter + "] = " + aux + ";");
+                            System.out.println("\t" + counter + " = " + counter + " + 1;");
+                            System.out.println("\tgoto " + tag + ";");
+                            System.out.println(condFalse + ":");
+                            System.out.println("\t" + i + "_length = " + e.getA() + "_length;");
+                            System.out.println("\t" + i + " = " + e.getA() + ";");
+                        }
+                    } 
+                    else if(typeA.equals(Type.STRING) && typeB.equals(Type.CHAR)){
+                        System.out.println("\t" + i + "[0] = " + e.getA() + ";");
+                        System.out.println("\t" + i + "_length = 1;");
+                        System.out.println("\t" + i + " = " + e.getA() + ";");
+                    }
+                    else if(typeA.equals(Type.CHAR) && typeB.equals(Type.STRING) && e.getA().contains("[")) {
+                        String current_position = e.getA().substring(e.getA().indexOf("[")+1, e.getA().indexOf("]"));
+                        String string_name = e.getA().substring(0,e.getA().indexOf("["));
+                        Tuple par = new Tuple(Generator.label_new(), Generator.label_new());
+                        System.out.println("# Comprobacion de rango");
+                        System.out.println("\tif (" + current_position + " < 0) goto " + par.getA() + ";");
+                        System.out.println("\tif (" + string_name + "_length < " + current_position + ") goto " + par.getA() + ";");
+                        System.out.println("\tif (" + string_name + "_length == " + current_position + ") goto " + par.getA() + ";");
+                        System.out.println("\tgoto " + par.getB() + ";");
+                        System.out.println(par.getA() + ":");
+                        Generator.error("Position '" + current_position + "' invalid.", false);
+                        System.out.println(par.getB() + ":");
+
+                        String temp = Generator.var_new_temp();
+                        System.out.println("\t" + temp + " = " + e.getA() + ";");
+                        System.out.println("\t" + i + " = " + temp + ";");
+
+
+                    } 
+                    /* CHAR with CHAR */
+                    else if(typeA.equals(Type.CHAR) && typeB.equals(Type.CHAR)){                                                                           
+                        System.out.println("\t" + i + " = " + e.getA() + ";");                        
+                    } 
+                    /* ARRAY CHAR with CHAR */
+                    else if(typeA.contains(Type.ARRAY) && typeA.contains(Type.CHAR) && typeB.contains(Type.CHAR) && !typeB.contains(Type.ARRAY)) {              
+                         System.out.println("\t" + i + " = " + e.getA() + ";");                               
+                    } 
+                    /* ARRAY CHAR with ARRAY CHAR */
+                    else if(typeA.contains(Type.ARRAY) && typeA.contains(Type.CHAR) && typeB.contains(Type.CHAR) && typeB.contains(Type.ARRAY)) {         
+                        String t = Generator.var_new_temp();
+                        System.out.println("\t" + t + " = " + e.getA() + ";");
+                        System.out.println("\t" + i + " = " + t + ";");                             
+                    } 
+                    /* CHAR with ARRAY CHAR */
+                    else if(typeA.equals(Type.CHAR) && typeB.contains(Type.CHAR) && typeB.contains(Type.ARRAY)) {   
+                        String t = Generator.var_new_temp();
+                        System.out.println("\t" + t + " = " + e.getA() + ";");
+                        System.out.println("\t" + i + " = " + t + ";");                             
+                    } 
+                    /* One of them is CHAR and the other isn't */
+                    else if(typeA.equals(Type.CHAR) || typeB.equals(Type.CHAR)){                                                      
+                        Generator.error("Types mismatch on CHAR.", true);
+                    } 
+                    /* INT with INT or FLOAT with FLOAT */
+                    else if(typeA.equals(typeB) && !typeA.contains(Type.ARRAY)){                                                                    
+                        System.out.println("\t" + i + " = " + e.getA() + ";");
+                    } 
+                    /* INT with FLOAT */
+                    else if(typeA.equals(Type.INT) && typeB.equals(Type.FLOAT)){                                                                    
+                        Generator.error("Variable '" + i + "' is type INT, not FLOAT.", true);
+                    } 
+                    /* FLOAT with INT */
+                    else if(typeA.equals(Type.FLOAT) && typeB.equals(Type.INT)){ 
+                        System.out.println("\t" + i + " = (float) " + e.getA() + ";");
+                    } 
+                    /* ARRAY INT with FLOAT or ARRAY FLOAT */
+                    else if(typeA.contains(Type.ARRAY) && typeA.contains(Type.INT) && typeB.contains(Type.FLOAT)){                                     
+                        Generator.error("Variable '" + i + "' is type INT, not FLOAT.", true);
+                    } 
+                    /* ARRAY INT with INT */
+                    else if(typeA.contains(Type.ARRAY) && typeA.contains(Type.INT) && typeB.equals(Type.INT)){                                    
+                        System.out.println("\t" + i + " = " + e.getA() + ";");
+                    } 
+                    /* ARRAY FLOAT WITH INT */
+                    else if(typeA.contains(Type.ARRAY) && typeA.contains(Type.FLOAT) && typeB.equals(Type.INT)){                                  
+                        String t = Generator.var_new_temp();
+                        System.out.println("\t" + t + " = " + e.getA() + ";");
+                        String t2 = Generator.var_new_temp();
+                        System.out.println("\t" + t2 + " = (float) " + t + ";");                        
+                        System.out.println("\t" + i + " = " + t2 + ";");
+                    } 
+                    /* ARRAY FLOAT with ARRAY FLOAT */
+                    else if(typeA.contains(Type.ARRAY) && typeA.contains(Type.FLOAT) && typeB.equals(Type.FLOAT)){                               
+                        System.out.println("\t" + i + " = " + e.getA() + ";");
+                    } 
+                    /* ARRAY FLOAT with ARRAY FLOAT */
+                    else if(typeA.contains(Type.ARRAY) && typeA.contains(Type.FLOAT) && typeB.contains(Type.ARRAY) && typeB.contains(Type.FLOAT)){          
+                        String t = Generator.var_new_temp();
+                        System.out.println("\t" + t + " = " + e.getA() + ";");
+                        System.out.println("\t" + i + " = " + t + ";");
+                    } 
+                    /* ARRAY FLOAT with ARRAY INT */
+                    else if(typeA.contains(Type.ARRAY) && typeA.contains(Type.FLOAT) && typeB.contains(Type.ARRAY) && typeB.contains(Type.INT)){      
+                        String t = Generator.var_new_temp();
+                        System.out.println("\t" + t + " = " + e.getA() + ";");
+                        String t2 = Generator.var_new_temp();
+                        System.out.println("\t" + t2 + " = (float) " + t + ";");                        
+                        System.out.println("\t" + i + " = " + t2 + ";");
+                    } 
+                    /* ARRAY INT with ARRAY INT */
+                    else if(typeA.contains(Type.ARRAY) && typeA.contains(Type.INT) && typeB.contains(Type.ARRAY) && typeB.contains(Type.INT)){    
+                        String t = Generator.var_new_temp();
+                        System.out.println("\t" + t + " = " + e.getA() + ";");
+                        System.out.println("\t" + i + " = " + t + ";");
+                    } 
+                    else if(typeA.equals(Type.INT) && typeB.contains(Type.ARRAY) && typeB.contains(Type.INT)){
+                        String t = Generator.var_new_temp();
+                        System.out.println("\t"+ t + " = " + e.getA() + ";");
+                        System.out.println("\t" + i + " = " + t + ";");
+                    } 
+                    else if(typeA.equals(Type.FLOAT) && typeB.contains(Type.ARRAY) && typeB.contains(Type.FLOAT)){
+                        String t = Generator.var_new_temp();
+                        System.out.println("\t"+ t + " = " + e.getA() + ";");
+                        System.out.println("\t" + i + " = " + t + ";");
+                    } 
+                    else if(typeA.equals(Type.FLOAT) && typeB.contains(Type.ARRAY) && typeB.contains(Type.INT)){
+                        String t = Generator.var_new_temp();
+                        System.out.println("\t"+ t + " = " + e.getA() + ";");
+                        System.out.println("\t" + i + " = (float) " + t + ";");
+                    } 
+                    else {
+                        Generator.error("Variable '" + i + "' is type INT, not FLOAT.", true);                         
+                    }
+                    RESULT = new Tuple(i, typeA);
+                }
+
+            }
+      :}
+;
+/*--------------------------------------------------------------------------------------------------------------------*/
+/*------------------------------------------------------------------------------------- Assigned value ---------------*/
+
+assigned_value ::= expression:e {: RESULT = e; :}
+    | array_init:e {: RESULT = e; :}
+    | INISTRING:i {: RESULT = new Tuple(i,Type.STRING); :}
+    | VAR:f {: Generator.function_set_name(f); :}
+      OP call_function_params CP {:
+        //System.out.println(f);
+        String t = Generator.function_get_type();
+        //String t = SymbolTable.table_get_type(Generator.function_get_name());
+        Generator.command("call", f);
+        Generator.params_reset_counter();
+        Generator.function_set_name(null);
+        RESULT = new Tuple(f, t);
+    :}
+    | MUL call_function:f {: RESULT = new Tuple("*" + f, Generator.function_get_type()); :}
+;
+/*--------------------------------------------------------------------------------------------------------------------*/
+/*------------------------------------------------------------------------------------- Casting ----------------------*/
+
+cast ::= CP OP expression:e {: RESULT= e; :}
+    | expression:e {: RESULT = e; :}
+;
+/*--------------------------------------------------------------------------------------------------------------------*/
+/*------------------------------------------------------------------------------------- Operator used for types  -----*/
+
+operator ::= variable:i {: 
+            String var_temp = i;
+            String f = Generator.function_get_name();
+            String p = Generator.function_get_parent();
+            String v = Generator.function_scope_get_vars(f, i, Generator.function_get_counter());
+            String p1 = Generator.function_scope_get_vars(p, i, Generator.function_get_counter());
+            String v2 = Generator.scope_get_vars(i, SymbolTable.table_get_block_index());
+            String v3 = Generator.function_scope_get_vars("f", i, Generator.function_get_counter());
+            /*
+            System.out.println("i " + i);
+            System.out.println("f " + f);
+            System.out.println("p " + p);
+            System.out.println("v " + v);
+            System.out.println("p1 " + p1);
+            System.out.println("v2 " + v2);
+            System.out.println("v3 " + v3);
+            Generator.function_data();
+            */
+            //SymbolTable.dump();
+            
+            if(f == null && p == null){
+                //System.out.println(1);
+                if(i.contains("[")) 
+                    var_temp = i.substring(0,i.indexOf("["));
+                else if(!SymbolTable.table_find(var_temp)){
+                    Generator.var_not_declared(i);
+                }
+                else {
+                    RESULT = new Tuple(i, SymbolTable.table_get_type(var_temp));
+                } 
+            }
+            else{
+                //System.out.println(2);
+                if(SymbolTable.param_exists(v)){
+                    RESULT = SymbolTable.param_get_with_name(v);
+                }
+                else if(SymbolTable.param_exists(v3)){
+                    RESULT = SymbolTable.param_get_with_name(v3);
+                }
+                else if(SymbolTable.param_exists(p1)){
+                    RESULT = SymbolTable.param_get_with_name(p1);
+                }
+                else if(SymbolTable.table_find(v2)){
+                    RESULT = new Tuple(v2, SymbolTable.table_get_type(v2));
+                }
+                
+                else{
+                    if(i.contains("[")) var_temp = i.substring(0,i.indexOf("["));
+                    else if(!SymbolTable.table_find(var_temp)){
+                        Generator.var_not_declared(i);
+                    } else {
+                        RESULT = new Tuple(i, SymbolTable.table_get_type(var_temp));
+                    } 
+                }
+            }
+        :}
+    | NUM:n {: RESULT = new Tuple(n,Type.INT); :}
+    | REAL:n {: RESULT = new Tuple(n,Type.FLOAT); :}
+    | QUOTES:n {: 
+        if(!n.contains("\\u")){
+            String s = n.replace("'", "");
+            int a = s.charAt(0);
+            if(s.equals("\b")){ a = 8; }
+            else if (s.equals("\n")){ a = 10; }
+            else if (s.equals("\f")){ a = 12; }
+            else if (s.equals("\r")){ a = 14; }
+            else if (s.equals("\t")){ a = 9; }
+            else if (s.equals("\"")){ a = 34; }
+            else if (s.equals("\\")){ a = 92; }
+            else if (s.equals("\'")){ a = 39; }
+            else if (s.contains("\\u")){ a = Integer.parseInt(s);}
+            RESULT = new Tuple(a+"", Type.CHAR);
+        } 
+        else {
+            String str = n.split(" ")[0];
+            str = str.replace("'","");
+            str = str.replace("\\","");
+            String[] arr = str.split("u");
+            String text = "";
+            for(int i = 1; i < arr.length; i++){
+                int hexVal = Integer.parseInt(arr[i],16);
+                text += "" + hexVal;
+            }
+                RESULT = new Tuple(text, Type.CHAR);
+            }
+    :}
+;
+
+/*--------------------------------------------------------------------------------------------------------------------*/
+/*------------------------------------------------------------------------------------- Variable assignment ----------*/
+
+var_assignment  ::= ASIG expression:e {: RESULT = e.getA(); :}
+    | ASIG INISTRING:i {: RESULT = i; :}
+    | variable:i ASIG expression:e {: RESULT = i; Generator.assignment(i, e.getA()); :}
+    | variable:i ASIG INISTRING:d {: RESULT = Generator.string_assignment(i, d); :}
+    | variable:i {: RESULT = i; :}
+    | OSB expression:n CSB {: 
+        if(SymbolTable.table_find(n.getA())){
+            Generator.error("The size of the array can't be defined with a constant.", true);   
+        }
+        RESULT = "[" + n.getA() + "]"; 
+        :}
+    | OSB expression:n CSB ASIG array_init:e {:
+        if(SymbolTable.table_find(n.getA())){
+            Generator.error("The size of the array can't be defined with a constant.", true);   
+        }
+        RESULT = "[" + n.getA() + "]";           
+        :}
+    | /* epsilon */ {: RESULT = null; :}
+;
+/*--------------------------------------------------------------------------------------------------------------------*/
+/*------------------------------------------------------------------------------------- Variable access --------------*/
+
+variable ::= pointer:i  {:  
+            //System.out.println(i);
+            if(SymbolTable.table_find(i)){
+                RESULT = Generator.search_var_block(i);
+            }
+            else {
+                RESULT = i;
+            } 
+            int p = Integer.parseInt(Generator.pointer_get_num());
+            if(p > 0){
+                for(int j = 0; j < p; j++){
+                    i = "*" + i;
+                }
+                RESULT = i;
+                Generator.pointer_reset();
+            }
+        :}
+    | VAR:i OSB expression:e CSB {: 
+            if(SymbolTable.table_find(i)){
+                RESULT = Generator.search_var_block(i);
+    
+                if(!SymbolTable.table_get_type(i).equals(Type.STRING)){
+                    Generator.string_range_check(i, e);
+                }
+
+                RESULT = RESULT + "[" + e.getA() + "]";
+            }
+            else {
+                RESULT = i;
+            } 
+        :}
+;
+/*--------------------------------------------------------------------------------------------------------------------*/
+/*------------------------------------------------------------------------------------- Variable declaraction --------*/
+
+var_declaration ::= INT pointer:i {: Generator.var_check_block(i); :}
+      var_assignment:d {: Generator.var_declaration(Type.INT, i, d); :}
+    | FLOAT pointer:i {: Generator.var_check_block(i); :}
+      var_assignment:d {: Generator.var_declaration(Type.FLOAT, i, d); :}
+    | CHAR pointer:i {: Generator.var_check_block(i); :}
+      var_assignment:d {: Generator.var_declaration(Type.CHAR, i, d); :}
+    | var_declaration:d COMMA var_assignment:i {:          
+            if(SymbolTable.table_find_in_current_block(i)){
+                Generator.var_declared(i);
+            }
+            else {
+                if(SymbolTable.table_find(i) && (SymbolTable.table_get_block_index() > 0)){
+                    String x = Generator.scope_get_vars(i, SymbolTable.table_get_block_index());
+                    SymbolTable.table_put(x ,d);
+                }
+                else {
+                    SymbolTable.table_put(i, d);
+                }
+            }
+            RESULT = d; 
+        :}
+;
+/*--------------------------------------------------------------------------------------------------------------------*/
+/*------------------------------------------------------------------------------------- Array initialization ---------*/
+
+array_init ::= OB expression:e {:   
+            Generator.array_init_temp(Generator.var_new_temp());     
+            Generator.assignment(Generator.array_new_position(), e.getA());
+        :} array_init:ini {: 
+            RESULT = ini; 
+            RESULT.setB(Generator.array_get_position() + e.getB()); 
+        :} CB
+    | COMMA expression:e {:
+            Generator.assignment(Generator.array_new_position(), e.getA());
+        :} array_init:ini {: 
+            RESULT = ini; 
+        :}
+    | /* epsilon */ {: RESULT = new Tuple(Generator.array_get_temp(), Generator.array_get_position()); :}
+;
+/*--------------------------------------------------------------------------------------------------------------------*/
+/*------------------------------------------------------------------------------------- Logical conditions -----------*/
+
+condition ::= expression:e1 EQ expression:e2 {:  RESULT = Generator.condition(Generator.EQ, e1, e2); :}
+    | expression:e1 NOTEQ expression:e2 {:  RESULT = Generator.condition(Generator.NOTEQ, e1, e2); :}
+    | expression:e1 LT expression:e2 {:  RESULT = Generator.condition(Generator.LT, e1, e2); :}
+    | expression:e1 LTOREQ expression:e2 {:  RESULT = Generator.condition(Generator.LTOREQ, e1, e2); :}
+    | expression:e1 GT expression:e2 {:  RESULT = Generator.condition(Generator.GT, e1, e2); :}
+    | expression:e1 GTOREQ expression:e2 {:  RESULT = Generator.condition(Generator.GTOREQ, e1, e2); :}
+    | NOT condition:c1 {:  RESULT = Generator.operator(Generator.NOT, c1, null); :}
+    | condition:c1 AND {:  Generator.label(c1.getA()); :} 
+      condition:c2 {:  RESULT = Generator.operator(Generator.AND, c1, c2); :}
+    | condition:c1 OR {:  Generator.label(c1.getB()); :} 
+      condition:c2 {:  RESULT = Generator.operator(Generator.OR, c1, c2); :}
+    | OP condition:c CP {:  RESULT = c; :}
+;
+
+/*--------------------------------------------------------------------------------------------------------------------*/
+/*------------------------------------------------------------------------------------- Pointers ---------------------*/
+
+pointer  ::= MUL {:  Generator.pointer_inc_counter(); :} pointer:p {: RESULT = p; :} %prec UPOINTER
+    | VAR:i {: RESULT = i; :} %prec UPOINTER
+; 

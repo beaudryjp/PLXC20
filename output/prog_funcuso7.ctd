@@ -1,0 +1,39 @@
+	a = 2;
+	b = 3;
+
+function f:
+	f_x_0 = param 1;
+	f_y_0 = param 2;
+	f_z_0 = param 3;
+	$t1 = f_z_0 - f_x_0;
+	$t3 = $t1 + f_y_0;
+	f = $t3;
+	return;
+end f;
+
+
+function g:
+	g_z_1 = param 1;
+	$t4 = g_z_1;
+	print $t4;
+	$t6 = a + g_z_1;
+	a = $t6;
+	$t8 = g_z_1 * g_z_1;
+	g = $t8;
+	return;
+end g;
+
+	param 1 = a;
+	param 2 = b;
+	param 3 = 3;
+	call g;
+	param 1 = g;
+	call f;
+	param 1 = b;
+	call g;
+	$t10 = f + g;
+	a = $t10;
+	$t11 = a;
+	print $t11;
+	$t12 = b;
+	print $t12;

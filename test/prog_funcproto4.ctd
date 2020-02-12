@@ -1,0 +1,13 @@
+   printc 66;
+   param 1 = 65;
+   param 2 = 60;
+   call f;
+   printc 67;
+
+function f:
+   a_2 = param 1;
+   y_2 = param 2;
+   printc a_2;
+   print y_2;
+end f;
+

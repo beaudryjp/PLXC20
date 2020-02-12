@@ -1,0 +1,16 @@
+# WARNING: Implicit definition of the function 'resta'.
+	param 1 = 60;
+	param 2 = 65;
+	call resta;
+	$t0 = resta;
+	print $t0;
+
+function resta:
+	resta_y_0 = param 1;
+	resta_a_0 = param 2;
+	$t2 = resta_a_0 - resta_y_0;
+	$t3 = (int) $t2;
+	resta = $t3;
+	return;
+end resta;
+

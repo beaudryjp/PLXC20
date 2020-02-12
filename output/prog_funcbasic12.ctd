@@ -1,0 +1,14 @@
+
+function f:
+	$t0 = 5;
+	print $t0;
+	f = 5;
+	return;
+end f;
+
+	$t1 = 1;
+	print $t1;
+	a = 0;
+	# ERROR: The number or the type of the parameters don't match.
+	error;
+	halt;

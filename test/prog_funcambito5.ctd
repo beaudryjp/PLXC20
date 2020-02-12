@@ -1,0 +1,15 @@
+
+function f:
+   x_2 = param 1;
+   y_2 = param 2;
+   if (x_2 == y_2) goto L0;
+   goto L1;
+L0:
+   a_4 = 2;
+   x_2 = 3;
+   goto L2;
+L1:
+L2:
+# ERROR: Variable 'a' no declarada
+   error;
+   halt;

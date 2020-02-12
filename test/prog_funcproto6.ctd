@@ -1,0 +1,27 @@
+
+function f:
+   x_2 = param 1;
+# WARNING: Definicion implicita de la funcion 'g'
+   param 1 = x_2;
+   call g;
+   param 1 = g;
+   call g;
+   y_3 = g;
+   f = y_3;
+   return;
+end f;
+
+
+function g:
+   z_4 = param 1;
+   $t0 = 2 * z_4;
+   print $t0;
+   $t1 = 2 * z_4;
+   g = $t1;
+   return;
+end g;
+
+   param 1 = 7;
+   call f;
+   param 1 = f;
+   call f;

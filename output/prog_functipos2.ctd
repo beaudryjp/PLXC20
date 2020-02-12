@@ -1,0 +1,30 @@
+
+function f:
+	f_x_0 = param 1;
+	$t0 = f_x_0;
+	print $t0;
+end f;
+
+
+function g:
+	g_ch_1 = param 1;
+	printc g_ch_1;
+end g;
+
+
+function h:
+	h_y_2 = param 1;
+	h_z_2 = param 2;
+	param 1 = h_y_2;
+	call f;
+	param 1 = h_z_2;
+	call g;
+end h;
+
+	param 1 = 65;
+	call g;
+	param 1 = 7;
+	call f;
+	param 1 = 9;
+	param 2 = 66;
+	call h;

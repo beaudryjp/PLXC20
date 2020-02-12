@@ -1,0 +1,16 @@
+# WARNING: Implicit definition of the function 'suma'.
+	param 1 = 65;
+	param 2 = 60;
+	call suma;
+	$t0 = suma;
+	print $t0;
+
+function suma:
+	suma_a_0 = param 1;
+	suma_y_0 = param 2;
+	$t2 = suma_a_0 + suma_y_0;
+	$t3 = (int) $t2;
+	suma = $t3;
+	return;
+end suma;
+

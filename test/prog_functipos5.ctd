@@ -1,0 +1,16 @@
+
+function f:
+   x_2 = param 1;
+   y_2 = param 2;
+   $t0 = x_2 + y_2;
+   f = $t0;
+   return;
+end f;
+
+   print 1;
+   param 1 = 11;
+   param 2 = 66;
+   call f;
+# ERROR: Error de tipos
+   error;
+   halt;

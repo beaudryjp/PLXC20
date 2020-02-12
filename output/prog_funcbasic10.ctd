@@ -1,0 +1,16 @@
+
+function f:
+	f_x_0 = param 1;
+	$t0 = f_x_0;
+	print $t0;
+	$t1 = -f_x_0;
+	f = $t1;
+	return;
+end f;
+
+	$t2 = 1;
+	print $t2;
+	a = 0;
+	# ERROR: The type of the first parameter is 'int' and the type of the parameter passed is 'float'.
+	error;
+	halt;

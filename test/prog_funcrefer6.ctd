@@ -1,0 +1,24 @@
+
+function refer:
+   x_2 = param 1;
+   $t0 = * x_2;
+   $t1 = * $t0;
+   $t2 = 4 * $t1;
+   y_3 = $t2;
+   $t3 = * x_2;
+   $t4 = y_3 + 4;
+   * $t3 = $t4;
+   $t5 = & y_3;
+   refer = $t5;
+   return;
+end refer;
+
+   * a = 4;
+   $t6 = & a;
+   param 1 = $t6;
+   call refer;
+   b = refer;
+   $t7 = * a;
+   print $t7;
+   $t8 = * b;
+   print $t8;

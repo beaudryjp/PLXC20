@@ -1,0 +1,27 @@
+
+function f:
+	f_x_0 = param 1;
+	f_y_0 = param 2;
+	f_z_0 = param 3;
+	f_t_0 = param 4;
+	printc f_t_0;
+	printc f_z_0;
+	$t0 = (int) f_y_0;
+	$t2 = f_x_0 - $t0;
+	f = $t2;
+	return;
+end f;
+
+	$t3 = 1;
+	print $t3;
+	x = 0;
+	param 1 = 9;
+	param 2 = 7.1;
+	param 3 = 66;
+	param 4 = 65;
+	call f;
+	x = f;
+	$t4 = x;
+	print $t4;
+	$t5 = 3;
+	print $t5;

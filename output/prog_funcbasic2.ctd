@@ -1,0 +1,11 @@
+	$t0 = 1;
+	print $t0;
+
+function dos:
+	$t1 = 2;
+	print $t1;
+end dos;
+
+	call dos;
+	$t2 = 3;
+	print $t2;

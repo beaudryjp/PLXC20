@@ -1,0 +1,39 @@
+
+function h:
+   t_2 = param 1;
+   $t0 = t_2 / 2;
+   h = $t0;
+   return;
+end h;
+
+
+function g:
+   z_4 = param 1;
+   param 1 = z_4;
+   call h;
+   param 1 = z_4;
+   call h;
+   $t1 = h * h;
+   g = $t1;
+   return;
+end g;
+
+
+function f:
+   x_6 = param 1;
+   y_6 = param 2;
+   $t2 = x_6 + y_6;
+   param 1 = $t2;
+   call g;
+   f = g;
+   return;
+end f;
+
+   param 1 = 8;
+   call h;
+   param 1 = h;
+   call g;
+   param 1 = 6;
+   param 2 = g;
+   call f;
+   print f;

@@ -1,0 +1,9 @@
+
+function f:
+	f_x_0 = param 1;
+	f_y_0 = param 2;
+	$t1 = f_x_0 + f_y_0;
+	$t3 = $t1 / 2;
+	# ERROR: Incorrect type on return sentence.
+	error;
+	halt;

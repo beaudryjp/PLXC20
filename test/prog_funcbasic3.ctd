@@ -1,0 +1,12 @@
+   x = 1;
+
+function tres:
+   x_2 = param 1;
+   print x_2;
+   return;
+end tres;
+
+   print 1;
+   param 1 = 2;
+   call tres;
+   print 3;

@@ -1,0 +1,28 @@
+
+function f:
+	f_x_0 = param 1;
+# WARNING: Implicit definition of the function 'g'.
+	param 1 = f_x_0;
+	call g;
+	param 1 = g;
+	call g;
+	y = g;
+	f = y;
+	return;
+end f;
+
+
+function g:
+	g_z_1 = param 1;
+	$t1 = 2 * g_z_1;
+	$t2 = $t1;
+	print $t2;
+	$t4 = 2 * g_z_1;
+	g = $t4;
+	return;
+end g;
+
+	param 1 = 7;
+	call f;
+	param 1 = f;
+	call f;

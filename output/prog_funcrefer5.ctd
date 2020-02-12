@@ -1,0 +1,11 @@
+
+function refer:
+	refer_x_0 = param 1;
+	p_1 = 0;
+	*p_1 = 12;
+	$t0 = *p_1;
+	$t1 = *refer_x_0;
+	$t2 = *$t1;
+	# ERROR: Operations with pointers.
+	error;
+	halt;

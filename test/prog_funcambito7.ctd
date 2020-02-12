@@ -1,0 +1,42 @@
+   x = 7;
+   y = 7;
+
+function f:
+   x_2 = param 1;
+   y_2 = param 2;
+   if (x_2 == y_2) goto L0;
+   goto L1;
+L0:
+   $t0 = y_2 + 2;
+   y_2 = $t0;
+   if (x_2 < y_2) goto L3;
+   goto L4;
+L3:
+   $t1 = x_2 + y_5;
+   $t2 = $t1 + 3;
+   y_5 = $t2;
+   x_2 = y_5;
+   $t3 = x_2 + y_5;
+   print $t3;
+   goto L5;
+L4:
+L5:
+   $t4 = x_2 * y_2;
+   $t5 = $t4 + 4;
+   x_2 = $t5;
+   print x_2;
+   goto L2;
+L1:
+L2:
+end f;
+
+   $t6 = x + y;
+   print $t6;
+   param 1 = x;
+   param 2 = y;
+   call f;
+   $t7 = x * y;
+   $t8 = $t7 + 7;
+   y = $t8;
+   $t9 = x + y;
+   print $t9;

@@ -1,0 +1,13 @@
+
+function f:
+   x_2 = param 1;
+   print x_2;
+   $t0 = -x_2;
+   f = $t0;
+   return;
+end f;
+
+   print 1;
+# ERROR: No coincide el numero o tipo de parametros de la funcion f REAL 
+   error;
+   halt;

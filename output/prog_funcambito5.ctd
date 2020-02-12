@@ -1,0 +1,15 @@
+
+function f:
+	f_x_0 = param 1;
+	f_y_0 = param 2;
+	if (f_x_0 == f_y_0) goto L1;
+	goto L2;
+L1:
+	a_2 = 2;
+	f_x_0 = 3;
+	goto L0;
+L2:
+L0:
+	# ERROR: # Variable 'a' not declared.
+	error;
+	halt;

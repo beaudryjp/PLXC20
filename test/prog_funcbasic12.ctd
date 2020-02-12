@@ -1,0 +1,11 @@
+
+function f:
+   print 5;
+   f = 5;
+   return;
+end f;
+
+   print 1;
+# ERROR: No coincide el numero o tipo de parametros de la funcion f INTEGER 
+   error;
+   halt;

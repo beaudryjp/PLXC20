@@ -1,0 +1,13 @@
+   x = 2;
+
+function f:
+   print x;
+   $t0 = -x;
+   f = $t0;
+   return;
+end f;
+
+   print 1;
+# ERROR: No coincide el numero o tipo de parametros de la funcion f INTEGER 
+   error;
+   halt;

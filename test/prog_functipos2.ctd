@@ -1,0 +1,29 @@
+
+function f:
+   x_2 = param 1;
+   print x_2;
+end f;
+
+
+function g:
+   ch_4 = param 1;
+   printc ch_4;
+end g;
+
+
+function h:
+   y_6 = param 1;
+   z_6 = param 2;
+   param 1 = y_6;
+   call f;
+   param 1 = z_6;
+   call g;
+end h;
+
+   param 1 = 65;
+   call g;
+   param 1 = 7;
+   call f;
+   param 1 = 9;
+   param 2 = 66;
+   call h;

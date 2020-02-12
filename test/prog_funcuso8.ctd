@@ -1,0 +1,26 @@
+
+function doble:
+   x_2 = param 1;
+   $t0 = 2 * x_2;
+   doble = $t0;
+   return;
+end doble;
+
+
+function triple:
+   x_4 = param 1;
+   param 1 = x_4;
+   call doble;
+   $t1 = doble * x_4;
+   triple = $t1;
+   return;
+end triple;
+
+   param 1 = 3;
+   call triple;
+   print triple;
+   param 1 = 2;
+   call triple;
+   param 1 = triple;
+   call doble;
+   print doble;

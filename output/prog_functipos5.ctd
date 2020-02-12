@@ -1,0 +1,18 @@
+
+function f:
+	f_x_0 = param 1;
+	f_y_0 = param 2;
+	$t1 = f_x_0 + f_y_0;
+	f = $t1;
+	return;
+end f;
+
+	$t2 = 1;
+	print $t2;
+	s = 0;
+	param 1 = 11;
+	param 2 = 66;
+	call f;
+	# ERROR: Types mismatch on CHAR.
+	error;
+	halt;

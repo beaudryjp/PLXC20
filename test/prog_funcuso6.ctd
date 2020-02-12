@@ -1,0 +1,34 @@
+   a = 2;
+
+function f:
+   x_2 = param 1;
+   y_2 = param 2;
+   $t0 = a + x_2;
+   $t1 = $t0 + y_2;
+   a = $t1;
+   print a;
+   $t2 = x_2 + y_2;
+   f = $t2;
+   return;
+end f;
+
+
+function g:
+   z_4 = param 1;
+   print z_4;
+   $t3 = a + z_4;
+   a = $t3;
+   $t4 = z_4 * z_4;
+   g = $t4;
+   return;
+end g;
+
+   param 1 = a;
+   call g;
+   param 1 = a;
+   call g;
+   param 1 = g;
+   param 2 = g;
+   call f;
+   print f;
+   print a;

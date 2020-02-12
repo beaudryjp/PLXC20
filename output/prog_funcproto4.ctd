@@ -1,0 +1,15 @@
+	printc 66;
+# WARNING: Implicit definition of the function 'f'.
+	param 1 = 65;
+	param 2 = 60;
+	call f;
+	printc 67;
+
+function f:
+	f_a_0 = param 1;
+	f_y_0 = param 2;
+	printc f_a_0;
+	$t0 = f_y_0;
+	print $t0;
+end f;
+

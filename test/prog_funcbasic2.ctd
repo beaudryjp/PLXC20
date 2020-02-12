@@ -1,0 +1,8 @@
+   print 1;
+
+function dos:
+   print 2;
+end dos;
+
+   call dos;
+   print 3;
